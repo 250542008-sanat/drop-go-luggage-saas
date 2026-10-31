@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <title>Süper Admin - {{ project_name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <!-- Navbar -->
+    <nav class="navbar navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">⚙️ {{ project_name }} - {{ t.title }}</a>
+            <div>
+                <a href="/admin?lang=tr" class="text-decoration-none {% if lang == 'tr' %}text-white fw-bold{% else %}text-light{% endif %}">TR</a> | 
+                <a href="/admin?lang=en" class="text-decoration-none {% if lang == 'en' %}text-white fw-bold{% else %}text-light{% endif %}">EN</a>
+                <span class="text-light mx-2">|</span>
+                <a class="btn btn-outline-light btn-sm" href="/?lang={{ lang }}">{{ t.back_home }}</a>
+                <a class="btn btn-danger btn-sm ms-2" href="/logout">Çıkış</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <!-- Sol Kolon: Dükkan Ekle & Ayarlar -->
+            <div class="col-md-4">
+                
+                <!-- Dükkan Ekle Kartı -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-dark text-white">{{ t.add_title }}</div>
+                    <div class="card-body">
+                        <form id="addStoreForm">
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">{{ t.f_name }}</label>
+                                <input type="text" id="storeName" class="form-control" required placeholder="{{ t.f_name_ph }}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">{{ t.f_addr }}</label>
+                                <textarea id="storeAddress" class="form-control" required rows="2"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">{{ t.f_rate }} ({{ sys.currency }})</label>
+                                <input type="text" id="hourlyRate" class="form-control" required value="20.0">
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">{{ t.f_btn }}</button>
+                        </form>
+                        <div id="formResult" class="mt-2"></div>
+                    </div>
+                </div>
+
+                <!-- Sistem Ayarları Kartı (YENİ) -->
+                <div class="card shadow-sm border-primary mb-4">
+                    <div class="card-header bg-primary text-white fw-bold">{{ t.set_title }}</div>
+                    <div class="card-body">
+                        <form id="settingsForm">
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">{{ t.s_app }}</label>
+                                <input type="text" id="appName" class="form-control" value="{{ sys.app_name }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">{{ t.s_cur }}</label>
+                                <select id="sysCurrency" class="form-select">
+                                    <option value="₺" {% if sys.currency == '₺' %}selected{% endif %}>₺ (TL)</option>
+                                    <option value="$" {% if sys.currency == '$' %}selected{% endif %}>$ (USD)</option>
+                                    <option value="€" {% if sys.currency == '€' %}selected{% endif %}>€ (EUR)</option>
+                                    <option value="£" {% if sys.currency == '£' %}selected{% endif %}>£ (GBP)</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">{{ t.s_lang }}</label>
+                                <select id="sysLang" class="form-select">
+                                    <option value="tr" {% if sys.default_lang == 'tr' %}selected{% endif %}>Türkçe</option>
+                                    <option value="en" {% if sys.default_lang == 'en' %}selected{% endif %}>English</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-outline-primary w-100">{{ t.s_btn }}</button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Sağ Kolon: Dükkanlar Tablosu -->
+            <div class="col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white fw-bold">{{ t.table_title }}</div>
+                    <div class="card-body p-0">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>{{ t.th_id }}</th><th>{{ t.th_name }}</th>
+                                    <th>{{ t.th_addr }}</th><th>{{ t.th_rate }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for store in stores %}
+                                <tr>
+                                    <td>#{{ store.id }}</td>
+                                    <td><strong>{{ store.name }}</strong></td>
+                                    <td class="small text-muted">{{ store.address }}</td>
+                                    <td><span class="badge bg-success">{{ store.hourly_rate }} {{ sys.currency }}</span></td>
+                                </tr>
+                                {% else %}
+                                <tr><td colspan="4" class="text-center py-4">{{ t.empty }}</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dükkan Ekleme Scripti
+        document.getElementById('addStoreForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            let rawRate = document.getElementById('hourlyRate').value;
+            let parsedRate = parseFloat(rawRate.replace(',', '.'));
+            const payload = {
+                name: document.getElementById('storeName').value,
+                address: document.getElementById('storeAddress').value,
+                hourly_rate: isNaN(parsedRate) ? 20.0 : parsedRate
+            };
+            try {
+                const response = await fetch('/stores/', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                });
+                if(response.ok) location.reload();
+            } catch (err) {}
+        });
+
+        // Ayarları Kaydetme Scripti (YENİ)
+        document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                app_name: document.getElementById('appName').value,
+                currency: document.getElementById('sysCurrency').value,
+                default_lang: document.getElementById('sysLang').value
+            };
+            try {
+                const response = await fetch('/api/settings', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                });
+                if(response.ok) location.reload();
+            } catch (err) {}
+        });
+    </script>
+</body>
+</html>

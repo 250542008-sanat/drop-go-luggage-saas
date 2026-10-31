@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <title>Esnaf - {{ project_name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-light">
+    <!-- Navbar -->
+    <nav class="navbar navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="#">📦 {{ project_name }} - {{ t.title }}</a>
+            <div>
+                <a href="/dashboard?lang=tr" class="text-decoration-none text-white fw-bold">TR</a> | 
+                <a href="/dashboard?lang=en" class="text-decoration-none text-white fw-bold">EN</a>
+                <span class="text-secondary mx-2">|</span>
+                <a class="btn btn-outline-light btn-sm" href="/?lang={{ lang }}">{{ t.back_home }}</a>
+                <a class="btn btn-danger btn-sm ms-2" href="/logout">Çıkış</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        
+        <!-- ÜST BÖLÜM: Analitik Kartları -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 bg-primary text-white">
+                    <div class="card-body">
+                        <h6 class="text-white-50 fw-bold">{{ t.stat_rev }}</h6>
+                        <h3 class="mb-0">{{ stats.rev }} {{ currency }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 bg-success text-white">
+                    <div class="card-body">
+                        <h6 class="text-white-50 fw-bold">{{ t.stat_bags }}</h6>
+                        <h3 class="mb-0">{{ stats.bags }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 bg-warning text-dark">
+                    <div class="card-body">
+                        <h6 class="text-black-50 fw-bold">{{ t.stat_active }}</h6>
+                        <h3 class="mb-0">{{ stats.active }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- SOL KOLON -->
+            <div class="col-md-8">
+                
+                <!-- YENİ: Demo Bilet Butonu -->
+                <div class="mb-3 text-end">
+                    <a href="/api/demo-bilet" class="btn btn-outline-primary btn-sm fw-bold">➕ Test İçin Demo Bilet Üret</a>
+                </div>
+
+                <!-- QR İşlem Formu -->
+                <div class="card shadow-sm mb-4 border-primary">
+                    <div class="card-body bg-white">
+                        <h5 class="card-title text-primary">📷 {{ t.scan_title }}</h5>
+                        <p class="text-muted small mb-3">{{ t.scan_desc }}</p>
+                        <form id="scanForm" class="d-flex gap-2">
+                            <input type="text" id="qrData" class="form-control" placeholder="{{ t.scan_ph }}" required>
+                            <button type="submit" class="btn btn-primary px-4 fw-bold">{{ t.scan_btn }}</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Tablo -->
+                <h5 class="mb-3">{{ t.table_title }}</h5>
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body p-0">
+                        <table class="table table-hover mb-0 text-center align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>{{ t.th_ref }}</th><th>{{ t.th_bags }}</th>
+                                    <th>{{ t.th_status }}</th><th>{{ t.th_price }}</th>
+                                    <th>Link</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for booking in bookings %}
+                                <tr>
+                                    <td class="fw-bold">{{ booking.booking_reference }}</td>
+                                    <td>{{ booking.bags_count }}</td>
+                                    <td>
+                                        {% if booking.status == 'pending' %}<span class="badge bg-warning text-dark">{{ t.st_pending }}</span>
+                                        {% elif booking.status == 'stored' %}<span class="badge bg-success">{{ t.st_stored }}</span>
+                                        {% else %}<span class="badge bg-secondary">{{ t.st_retrieved }}</span>{% endif %}
+                                    </td>
+                                    <td class="fw-bold text-success">{{ booking.total_price }} {{ currency }}</td>
+                                    <td><a href="/ticket/{{ booking.booking_reference }}" target="_blank" class="btn btn-sm btn-outline-dark">Bilet</a></td>
+                                </tr>
+                                {% else %}
+                                <tr><td colspan="5" class="text-center py-4">{{ t.empty }}</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SAĞ KOLON: Grafikler -->
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 h-100 mb-4">
+                    <div class="card-header bg-white fw-bold">{{ t.chart_title }}</div>
+                    <div class="card-body" style="position: relative; height:300px;">
+                        <canvas id="volumeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scriptler -->
+    <script>
+        // Grafik
+        const ctx = document.getElementById('volumeChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ chart_labels_json | safe }},
+                datasets: [{ label: 'Bagaj Hacmi', data: {{ chart_data_json | safe }}, borderColor: '#0d6efd', backgroundColor: 'rgba(13, 110, 253, 0.1)', borderWidth: 3, tension: 0.4, fill: true }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        });
+
+        // YENİ: QR Kod İşleme Scripti
+        document.getElementById('scanForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const qr = document.getElementById('qrData').value;
+            try {
+                const response = await fetch('/api/scan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ qr_code: qr })
+                });
+                if(response.ok) {
+                    location.reload(); // Başarılıysa sayfayı yenile, istatistikler ve tablo anında artsın!
+                } else {
+                    alert("Geçersiz veya bulunamayan bir QR Kod girdiniz!");
+                }
+            } catch (err) {
+                alert("Sistem hatası!");
+            }
+        });
+    </script>
+</body>
+</html>

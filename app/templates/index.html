@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <title>Drop&Go Luggage Storage</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    
+    <!-- Sağ Üst Dil Seçici -->
+    <div class="container mt-3 text-end">
+        <a href="/?lang=tr" class="text-decoration-none {% if lang == 'tr' %}fw-bold text-dark{% else %}text-muted{% endif %}">TR</a> | 
+        <a href="/?lang=en" class="text-decoration-none {% if lang == 'en' %}fw-bold text-dark{% else %}text-muted{% endif %}">EN</a>
+    </div>
+
+    <!-- Ana İçerik -->
+    <div class="container text-center mt-4">
+        <h1 class="text-primary mb-3">📦 Drop&Go Luggage Storage</h1>
+        <p class="text-muted mb-5">{{ t.welcome }}</p>
+
+        <div class="row justify-content-center gap-4">
+            <!-- Esnaf Paneli -->
+            <div class="col-md-4 card shadow-sm p-4">
+                <h4 class="text-success mb-3">🏪 {{ t.store_panel }}</h4>
+                <p class="small text-muted">{{ t.store_desc }}</p>
+                <a href="/dashboard" class="btn btn-success mt-auto">{{ t.go_btn }}</a>
+            </div>
+
+            <!-- Yönetici Paneli -->
+            <div class="col-md-4 card shadow-sm p-4">
+                <h4 class="text-primary mb-3">⚙️ {{ t.admin_panel }}</h4>
+                <p class="small text-muted">{{ t.admin_desc }}</p>
+                <a href="/admin" class="btn btn-primary mt-auto">{{ t.go_btn }}</a>
+            </div>
+        </div>
+
+        <!-- Swagger Linki -->
+        <div class="mt-5">
+            <a href="/docs" class="text-muted small text-decoration-none">{{ t.api_link }}</a>
+        </div>
+    </div>
+</body>
+</html>

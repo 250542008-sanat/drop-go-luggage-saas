@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ t.login_title }} - {{ project_name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .login-container { max-width: 400px; margin-top: 10vh; }
+    </style>
+</head>
+<body>
+    <div class="container login-container">
+        <!-- Dil Seçici -->
+        <div class="text-end mb-3">
+            <a href="/login?lang=tr" class="text-decoration-none {% if lang == 'tr' %}fw-bold text-dark{% else %}text-muted{% endif %}">TR</a> | 
+            <a href="/login?lang=en" class="text-decoration-none {% if lang == 'en' %}fw-bold text-dark{% else %}text-muted{% endif %}">EN</a>
+        </div>
+
+        <div class="card shadow border-0 rounded-4">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <h2 class="text-primary">📦</h2>
+                    <h5 class="fw-bold">{{ t.login_title }}</h5>
+                    <p class="text-muted small">{{ project_name }}</p>
+                </div>
+                
+                {% if error %}
+                <div class="alert alert-danger small py-2">{{ error }}</div>
+                {% endif %}
+                
+                <!-- Form verileri FastAPI'ye OAuth2 form standartlarında (application/x-www-form-urlencoded) gönderilir -->
+                <form method="POST" action="/login?lang={{ lang }}">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">{{ t.username }}</label>
+                        <input type="text" name="username" class="form-control" required placeholder="{{ t.user_ph }}">
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold">{{ t.password }}</label>
+                        <input type="password" name="password" class="form-control" required placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 fw-bold">{{ t.login_btn }}</button>
+                </form>
+                
+                <div class="text-center mt-4">
+                    <a href="/?lang={{ lang }}" class="text-muted small text-decoration-none">← {{ t.back_home }}</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
