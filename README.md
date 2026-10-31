@@ -6,6 +6,8 @@ Drop&Go allows businesses to manage luggage storage points, track daily volumes,
 
 The platform includes customizable branding, multilingual support, role-based authentication, analytics, and Docker-based deployment.
 
+If you would like to purchase this project immediately and obtain its source code:https://mustafabreeze8.gumroad.com/l/iddqgn?_gl=1*18wnlg3*_ga*NTMxODMyNjU4LjE3OTM0NTgxMTQ.*_ga_6LJN6D94N6*czE3OTM0NjI0MjEkbzIkZzEkdDE3OTM0NjM0ODYkajI1JGwwJGgw
+
 ## 🌟 Key Features
 
 ### 🎨 White-Label Ready
